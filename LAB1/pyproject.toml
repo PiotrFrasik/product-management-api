@@ -1,0 +1,18 @@
+[project]
+name = "P1-ZTP"
+version = "0.1.0"
+description = "Zarządzanie produktami - P1-ZTP"
+authors = [
+    { name = "Piotr Frasik", email = "165329448+PiotrFrasik@users.noreply.github.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "black>=26.10.1",
+    "fastapi>=0.162.0",
+    "psycopg[binary]>=3.3.6",
+    "sqlalchemy>=2.1.6",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[tool.uv]
+package = false
