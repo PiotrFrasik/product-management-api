@@ -1,0 +1,51 @@
+name: p1-ztp
+
+services:
+
+  db:
+    image: postgres:16
+    container_name: p1-ztp-db
+    restart: unless-stopped
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5433:5432"
+
+  web:
+    build: .
+    image: p1-ztp-web:latest
+    container_name: fastapi-dp
+    restart: unless-stopped
+    command: uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - .:/app
+      - /app/.venv
+    ports:
+      - "127.0.0.1:8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  localstack:
+    image: localstack/localstack
+    container_name: localstack-dp
+    ports:
+      - '127.0.0.1:4566:4566'
+    environment:
+      - SERVICES=s3,sqs
+      - AWS_DEFAULT_REGION=eu-central-1
+
+
+volumes:
+  postgres_data:
