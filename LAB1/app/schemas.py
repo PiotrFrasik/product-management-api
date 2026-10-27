@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel, Field, ConfigDict, model_validator
+from pydantic import BaseModel, Field, ConfigDict, model_validator, field_validator
 from .models import ProductCategory
 
 
@@ -8,6 +8,17 @@ class ProductBase(BaseModel):
     price: float
     category: ProductCategory
     quantity: int = Field(default=0, ge=0)
+
+    @field_validator("quantity", mode="before")
+    @classmethod
+    def validate_quantity(cls, v):
+        if not isinstance(v, int):
+            raise ValueError("Quantity must be an integer. Please correct the quantity field.")
+        if v < 0:
+            raise ValueError(
+                "Quantity cannot be less than zero. Please correct the quantity field."
+            )
+        return v
 
     @model_validator(mode="after")
     def validate_price_for_category(self):
@@ -20,8 +31,9 @@ class ProductBase(BaseModel):
         min_p, max_p = limits.get(self.category, (0.0, float("inf")))
         if not (min_p <= self.price <= max_p):
             raise ValueError(
-                f"Dla kategorii {self.category.value} cena musi mieścić się w przedziale {min_p} - {max_p} PLN"
+                f"For category {self.category.value}, the price must be between {min_p} and {max_p} PLN."
             )
+
         return self
 
 
