@@ -13,7 +13,9 @@ class ProductBase(BaseModel):
     @classmethod
     def validate_quantity(cls, v):
         if not isinstance(v, int):
-            raise ValueError("Quantity must be an integer. Please correct the quantity field.")
+            raise ValueError(
+                "Quantity must be an integer. Please correct the quantity field."
+            )
         if v < 0:
             raise ValueError(
                 "Quantity cannot be less than zero. Please correct the quantity field."
@@ -51,6 +53,25 @@ class ProductUpdate(BaseModel):
 
 
 class ProductResponse(ProductBase):
+    id: int
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class BannedPhrasesBase(BaseModel):
+    name: str = Field(min_length=3, max_length=20, pattern=r"^[a-zA-Z0-9 ]+$")
+
+
+class BannedPhrasesCreate(BannedPhrasesBase):
+    pass
+
+
+class BannedPhrasesUpdate(BannedPhrasesBase):
+    pass
+
+
+class BannedPhrasesResponse(BannedPhrasesBase):
     id: int
     created_at: datetime
 
