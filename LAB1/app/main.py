@@ -30,6 +30,11 @@ def get_product(id: int, db: Session = Depends(get_db)):
 
 @app.post("/api/v1/products", response_model=schemas.ProductResponse)
 def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)):
+
+    existing_product = db.query(models.Product).filter(models.Product.name == product.name).first()
+    if existing_product:
+        raise HTTPException(status_code=400, detail="The product name is already taken.")
+
     db_product = models.Product(**product.model_dump())
     db.add(db_product)
     db.commit()
