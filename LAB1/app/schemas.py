@@ -76,3 +76,14 @@ class BannedPhrasesResponse(BannedPhrasesBase):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ProductChangeHistoryResponse(BaseModel):
+    id: int
+    id_product: int
+    variable_name: str
+    old_value: str | None = None
+    new_value: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
