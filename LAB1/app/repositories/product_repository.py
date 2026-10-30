@@ -1,5 +1,4 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import inspect, Enum
 from ..models import Product, ProductChangeHistory, ProductCategory
 
 
@@ -36,28 +35,12 @@ class ProductRepository:
         self.db.refresh(product)
         return product
 
-    def update(self, product: Product) -> Product:
-        state = inspect(product)
-        if state.modified:
-            for attr in state.attrs:
-                history = attr.history
-                if history.has_changes():
-                    old_value = history.deleted[0] if history.deleted else None
-                    new_value = history.added[0] if history.added else None
-
-                    if isinstance(old_value, Enum):
-                        old_value = old_value.value
-
-                    if isinstance(new_value, Enum):
-                        new_value = new_value.value
-
-                    new_producy_history = ProductChangeHistory(
-                        id_product=product.id,
-                        variable_name=str(attr.key),
-                        old_value=str(old_value) if old_value is not None else None,
-                        new_value=str(new_value),
-                    )
-                    self.db.add(new_producy_history)
+    def update(
+        self, product: Product, history_list: list[ProductChangeHistory]
+    ) -> Product:
+        if history_list:
+            for product_history in history_list:
+                self.db.add(product_history)
 
         self.db.commit()
         self.db.refresh(product)

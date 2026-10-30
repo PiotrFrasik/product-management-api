@@ -3,6 +3,7 @@ from ..repositories.banned_phrase_repository import BannedPhraseRepository
 from ..repositories.product_repository import ProductRepository
 from ..models import Product, ProductChangeHistory
 from ..schemas import ProductUpdate, ProductCreate
+from sqlalchemy import inspect, Enum
 
 
 class ProductService:
@@ -51,6 +52,35 @@ class ProductService:
         return self.product_repo.create(db_product)
 
     def update(self, id: int, update_data: ProductUpdate) -> Product:
+        def _get_new_product_history(product: Product):
+            history_dict = []
+            state = inspect(product)
+            if state.modified:
+                for attr in state.attrs:
+                    history = attr.history
+                    if history.has_changes():
+                        old_value = history.deleted[0] if history.deleted else None
+                        new_value = history.added[0] if history.added else None
+
+                        if isinstance(old_value, Enum):
+                            old_value = old_value.value
+
+                        if isinstance(new_value, Enum):
+                            new_value = new_value.value
+
+                        history_dict.append(
+                            ProductChangeHistory(
+                                id_product=product.id,
+                                variable_name=str(attr.key),
+                                old_value=(
+                                    str(old_value) if old_value is not None else None
+                                ),
+                                new_value=str(new_value),
+                            )
+                        )
+
+            return history_dict if history_dict else None
+
         product = self.get_by_id(id)
 
         update_dict = update_data.model_dump(exclude_unset=True)
@@ -69,7 +99,7 @@ class ProductService:
         for field, value in update_dict.items():
             setattr(product, field, value)
 
-        return self.product_repo.update(product)
+        return self.product_repo.update(product, _get_new_product_history(product))
 
     def delete(self, id: int) -> dict[str, str]:
         product = self.get_by_id(id)
