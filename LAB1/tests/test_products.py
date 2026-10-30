@@ -257,3 +257,37 @@ def test_delete_product(client):
 
     get_res = client.get(f"/api/v1/products/{product_id}")
     assert get_res.status_code == 404
+
+def test_save_product_history(client):
+    """Tests correct saving history"""
+    new_value = 3500.0
+    old_value = 3000.0
+    payload = {
+        "name": "LaptopDell15",
+        "price": old_value,
+        "category": "Elektronika",
+        "quantity": 10,
+    }
+    create_response = client.post("/api/v1/products", json=payload)
+    assert create_response.status_code == 201
+
+    product_id = create_response.json()["id"]
+
+    update_res = client.put(f"/api/v1/products/{product_id}", json={"price": new_value})
+    assert update_res.status_code == 200
+    assert update_res.json()["price"] == 3500.0
+    assert update_res.json()["name"] == "LaptopDell15"
+
+    history_res = client.get(f"/api/v1/products/{product_id}/history")
+    data = history_res.json()
+    assert history_res.status_code == 200
+    assert data[0]["id"] == 1
+    assert data[0]["id_product"] == product_id
+    assert data[0]["variable_name"] == "price"
+    assert data[0]["new_value"] == str(new_value)
+    assert data[0]["old_value"] == str(old_value)
+
+def test_save_product_history_not_found(client):
+    product_id = 99999
+    history_res = client.get(f"/api/v1/products/{product_id}/history")
+    assert history_res.status_code == 404
