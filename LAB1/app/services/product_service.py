@@ -1,7 +1,7 @@
 ﻿from fastapi import HTTPException
 from ..repositories.banned_phrase_repository import BannedPhraseRepository
 from ..repositories.product_repository import ProductRepository
-from ..models import Product
+from ..models import Product, ProductChangeHistory
 from ..schemas import ProductUpdate, ProductCreate
 
 
@@ -32,6 +32,11 @@ class ProductService:
         if not product:
             raise HTTPException(404, f"Product {id} not found.")
         return product
+
+    def get_product_history_by_id(self, id: int) -> list[ProductChangeHistory]:
+        if not self.product_repo.get_by_id(id):
+            raise HTTPException(404, f"Product {id} not found.")
+        return self.product_repo.get_product_history_by_id(id)
 
     def create(self, product_data: ProductCreate) -> Product:
         existing_product = self.product_repo.get_by_name(product_data.name)

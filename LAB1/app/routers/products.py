@@ -1,7 +1,12 @@
 ﻿from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 from ..database import get_db
-from ..schemas import ProductCreate, ProductResponse, ProductUpdate
+from ..schemas import (
+    ProductCreate,
+    ProductResponse,
+    ProductUpdate,
+    ProductChangeHistoryResponse,
+)
 from ..services.product_service import ProductService
 from ..repositories.product_repository import ProductRepository
 from ..repositories.banned_phrase_repository import BannedPhraseRepository
@@ -23,6 +28,13 @@ def get_products(service: ProductService = Depends(get_product_service)):
 @router.get("/{id}", response_model=ProductResponse)
 def get_product(id: int, service: ProductService = Depends(get_product_service)):
     return service.get_by_id(id)
+
+
+@router.get("/{id}/history", response_model=list[ProductChangeHistoryResponse])
+def get_product_history(
+    id: int, service: ProductService = Depends(get_product_service)
+):
+    return service.get_product_history_by_id(id)
 
 
 @router.post("", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
