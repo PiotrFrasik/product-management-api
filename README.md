@@ -35,18 +35,22 @@ A request flows strictly in one direction: **Router → Service → Repository �
 The easiest way to run the application is using Docker.
 
 1. Clone the repository and open the terminal in the root directory.
-2. Build and start the containers:
+2. Create the `.env` file from the template (adjust the values if needed):
+   ```bash
+   cp .env.example .env
+   ```
+3. Build and start the containers:
    ```bash
    docker-compose up --build
    ```
-3. The API will be available at `http://localhost:8000`.
-4. You can access the interactive Swagger UI documentation at `http://localhost:8000/docs`.
+4. The API will be available at `http://localhost:8000`.
+5. You can access the interactive Swagger UI documentation at `http://localhost:8000/docs`.
 
 ## Local Installation
 
 If you prefer to run the API directly on your machine:
 
-1. Ensure a PostgreSQL server is running and configure the `DATABASE_URL` in the `.env` file.
+1. Ensure a PostgreSQL server is running (e.g. `docker-compose up -d db`). By default the app connects to `postgresql+psycopg://postgres:postgres@127.0.0.1:5433/productsdb`; set the `DATABASE_URL` environment variable to override it.
 2. Install dependencies using the `uv` package manager:
    ```bash
    uv sync
